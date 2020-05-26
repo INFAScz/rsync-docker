@@ -32,16 +32,46 @@ else
     echo "Running rsync as a cron job NOT selected."
 fi
 
+
+# get cmd args
+ARGS_A=($@)
+DSDIR="/data/src"
+DDDIR="/data/dst"
+
+if [ $# > 1 ]; then    
+    SRC_DIR=${ARGS_A[$[$#-2]]:="${DSDIR}"}
+    DST_DIR=${ARGS_A[$[$#-1]]:="${DDDIR}"}
+    echo "INF: Are the last two arguments to the directory?"
+
+    if [ ! -d ${SRC_DIR} ] || [ ! -d ${DST_DIR} ]; then
+            echo "ERR: SRC (${SRC_DIR}) or DSC (${DST_DIR}) path isn't dir !!!"
+            echo "INF: Fix to default DIRs (${DSDIR}, ${DDDIR})"
+            SRC_DIR="${DSDIR}"
+            DST_DIR="${DDDIR}"
+    else
+            echo "OK: DIRs for rsync exist"
+    fi
+
+    ARGS_S="${@%$SRC_DIR}"
+    OPTION="${ARGS_S%$DST_DIR} ${OPTION:-} ${SRC_DIR} ${DST_DIR}"
+    echo "DBG: ${OPTION}"    
+else
+    echo "WARN: Few arguments. Default folders are set for rsync."
+    OPTION="${1:-} ${DSDIR} ${DDDIR}"
+fi
+
 echo "Preparation steps completed."
 
 ### EXECUTION
 
-if [ "$RSYNC_CRONTAB" != "" ]; then
+if [ -z "$RSYNC_CRONTAB" ] || [ "$RUN_ON_START" == "true" ]; then
+    # one time run
+    echo "Executing rsync as an one time run..."
+    eval rsync $OPTION
+fi
+
+if [ -n "$RSYNC_CRONTAB" ]; then
     # run as a cron job, start the cron daemon
     echo "Starting the cron daemon..."
     crond -f
-else
-    # one time run
-    echo "Executing rsync as an one time run..."
-    eval rsync $@
 fi
