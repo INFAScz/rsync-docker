@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # rsync.sh - a script to configure the rsync job in the container
 
@@ -32,8 +32,8 @@ else
     echo "Running rsync as a cron job NOT selected."
 fi
 
+# get CMD args
 
-# get cmd args
 ARGS_A=($@)
 DSDIR="/data/src"
 DDDIR="/data/dst"
@@ -64,10 +64,12 @@ echo "Preparation steps completed."
 
 ### EXECUTION
 
-if [ -z "$RSYNC_CRONTAB" ] || [ "$RUN_ON_START" == "true" ]; then
+if [ -n "$OPTION" ] && ([ -z "$RSYNC_CRONTAB" ] || [ "$RUN_ON_START" == "true" ]); then
     # one time run
     echo "Executing rsync as an one time run..."
     eval rsync $OPTION
+else
+    echo "Rsync was not running. Is crontab set?"
 fi
 
 if [ -n "$RSYNC_CRONTAB" ]; then

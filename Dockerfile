@@ -5,6 +5,7 @@ LABEL forked.from="https://github.com/ogivuk/rsync-docker"
 
 RUN apk add --update-cache \
     rsync \
+    bash \
     openssh-client \
     tzdata \
  && rm -rf /var/cache/apk/*
